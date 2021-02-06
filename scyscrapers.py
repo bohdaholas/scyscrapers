@@ -90,7 +90,7 @@ def check_horizontal_visibility(board: list):
     Check row-wise visibility (left-right and vice versa)
 
     Return True if all horizontal hints are satisfiable,
-     i.e., for line 412453* , hint is 4, and 1245 are the four buildings
+     i.e., for line 412453t* , hint is 4, and 1245 are the four buildings
       that could be observed from the hint looking to the right.
 
     >>> check_horizontal_visibility(['***21**', '412453*', '423145*', '*543215', '*35214*', '*41532*', '*2*1***'])
@@ -100,7 +100,29 @@ def check_horizontal_visibility(board: list):
     >>> check_horizontal_visibility(['***21**', '452413*', '423145*', '*543215', '*35214*', '*41532*', '*2*1***'])
     False
     """
-    pass
+    for row in board:
+        left_to_right_direction = None
+        if row[0] == '*' and row[-1] != '*':
+            left_to_right_direction = False
+            hint = int(row[-1])
+        if row[0] != '*' and row[-1] == '*':
+            left_to_right_direction = True
+            hint = int(row[0])
+        if left_to_right_direction is True and not left_to_right_check(row, hint):
+            return False
+        if left_to_right_direction is False and not left_to_right_check(row[::-1], hint):
+            return False
+    return True
+
+
+def get_board_columns(board):
+    columns = []
+    for i in range(1, 5 + 1):
+        column = ''
+        for row in board:
+            column += row[i]
+        columns.append(column)
+    return columns
 
 
 def check_columns(board: list):
@@ -116,7 +138,7 @@ def check_columns(board: list):
     >>> check_columns(['***21**', '412553*', '423145*', '*543215', '*35214*', '*41532*', '*2*1***'])
     False
     """
-    pass
+    return check_uniqueness_in_rows(get_board_columns(board))
 
 
 def check_skyscrapers(input_path: str):
@@ -125,7 +147,12 @@ def check_skyscrapers(input_path: str):
     Return True if the board status is compliant with the rules,
     False otherwise.
 
-    >>> check_skyscrapers("../check.txt")
+    >>> check_skyscrapers("check.txt")
     True
     """
-    pass
+    with open(input_path, 'r') as file:
+        board = file.read().splitlines()
+        if check_uniqueness_in_rows(board) and check_columns(board) and \
+                check_horizontal_visibility(board) and check_horizontal_visibility(get_board_columns(board)):
+            return True
+        return False
